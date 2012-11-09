@@ -1,0 +1,121 @@
+﻿@section Scripts {
+    @Scripts.Render("~/bundles/knockout")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/facebox.js")
+    <script type="text/javascript">
+        //on load bind model boxes
+        jQuery(document).ready(function ($) {
+            $('a[rel*=facebox]').facebox()
+        })
+
+        function Comment(postid, text) {
+            this.PostId = postid;
+            this.CommentText = text;
+            //users can add comment on post
+
+        }
+
+        function Post(id, title, text, comments) {
+            this.Id = id;
+            this.Title = title;
+            this.Text = text;
+            this.comments = ko.observableArray(comments);
+            this.newCommentText = "";
+            this.addComment = function (post, event) {
+                //push comment to server
+                var newComment = new Comment(post.Id, post.newCommentText);
+                $.post("api/Comment/PostComment", newComment, function (data) { console.log(data) });
+                post.comments.push(newComment);
+                //this.comments.push(comment);
+            }
+        }
+
+        var createPostForm = function (formElement) {
+            $.post("api/Post/PostBPost", $(formElement).serialize(), "json").done(function (newPost) {
+                console.log(viewModel.posts.length);
+                newPost.comments = [];
+                newPost.newCommentText = "";
+                viewModel.posts.push(newPost);
+            });
+            return false;
+        }
+        function PostsViewModel(posts) {
+            var self = this;
+            self.loaded = ko.observable(false);
+            self.posts = ko.observableArray(posts);
+
+
+
+
+            // Load the initial state
+            $.getJSON("api/Post/", function (data) {
+                for (var item in data) {
+                    var post = new Post(data[item].Id, data[item].Title, data[item].Text, data[item].Comments);
+                    viewModel.posts.push(post);
+                    // console.log(post);
+                }
+            }).done(function () { self.loaded(true); });
+        }
+        var viewModel = new PostsViewModel([]);
+        ko.applyBindings(viewModel);
+    </script>
+}
+<header>
+    <div class="content-wrapper">
+        <div class="float-left">
+          
+        </div>
+    </div>
+</header>
+<div id="body">
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">      
+                <h1>Welcome to MyBlog!</h1>
+                
+        </div>
+    </section>
+    <section class="content-wrapper main-content clear-fix">
+        <h3>Recent posts <a style="float:right" href="#newPost" >Create a post</a></h3>
+            <div id="container">
+                <ul id="posts" data-bind="visible: loaded, foreach: posts">
+                <li> 
+                <h3 data-bind="text: Title" class="ui-widget-header"></h3>
+                <div class="postContent"  data-bind="text: Text"></div>
+                <b>Comments</b>
+
+                <ul class="comments" data-bind=" foreach: comments">
+                    <li> 
+                    <span> 
+                    <img src="http://www.gravatar.com/avatar.php?default=http%3A%2F%2Fmediacdn.disqus.com%2F1352316204%2Fimages%2Fnoavatar92.png&amp;size=92&amp;gravatar_id=31944a3dd5b6d55155cd2782ef406cc4" class="user" alt="Avatar">
+                    </span>
+                    <span  data-bind="text: CommentText"></span>
+                    </li>
+                </ul>
+                <ul class="comments">
+                    <li>
+                        <textarea id="addComment" data-bind="value: newCommentText" placeholder="Leave a comment">
+                        </textarea>
+                         <a href='#' data-bind='click: addComment '>Comment</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+       <div id="newPost">
+       <h2>Creat a post</h2>
+       <hr />
+        <form id="frmAddPost" name="frmAddPost" onsubmit="return createPostForm(this)">
+        <fieldset>
+            <label>
+                Title</label>
+            <input type="text" name="Title" id="Title" />
+            <label>
+                Text</label>
+            <textarea id="Text" name="Text" rows="4"></textarea><br />
+            <input type="submit" value="Post" name="btnSubmit" />
+        </fieldset>
+        </form>
+    </div>
+    </section>
+</div>
