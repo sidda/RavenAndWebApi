@@ -12,12 +12,12 @@ namespace WebAPI.Controllers
 {
     public class PostController : BaseController
     {
-        Post[] posts = new Post[]{
+        readonly Post[] _posts = new Post[]{
             new Post{Id=1,Title="This is Post1",PostedOn=DateTime.Now,Text="Lorem Ipsum is simply dummy text     of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."},
             new Post{Id=2,Title="This is Post2",PostedOn=DateTime.Now,Text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."}
         };
 
-        Comment[] comments = new Comment[]{
+        Comment[] _comments = new Comment[]{
             new Comment{Id=1,CommentText="This is comment1", PostId=1,PostedOn=DateTime.Now},
             new Comment{Id=2,CommentText="This is comment2", PostId=1,PostedOn=DateTime.Now},
             new Comment{Id=3,CommentText="This is comment1", PostId=2,PostedOn=DateTime.Now},
@@ -28,10 +28,10 @@ namespace WebAPI.Controllers
         //use this for creating sample posts/comments data
         public IEnumerable<Post> Get(int id)
         {
-            RavenSession.Store(posts[0]);
+            RavenSession.Store(_posts[0]);
             //RavenSession.Store(comments);
             RavenSession.SaveChanges();
-            return from p in posts
+            return from p in _posts
                      where p.Id==id
                       select p;
         }
@@ -48,7 +48,7 @@ namespace WebAPI.Controllers
         //            });
         //}
 
-        public IEnumerable<PostViewModel> Get()
+        public IEnumerable<PostViewModel> Get() 
         {
             return (from p in RavenSession.Query<Post>().ToList()
                     select new PostViewModel

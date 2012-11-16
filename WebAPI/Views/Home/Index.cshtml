@@ -15,12 +15,23 @@
 
         }
 
+        var createPostForm = function (formElement) {
+            $.post("api/Post/PostBPost", $(formElement).serialize(), "json").done(function (newPost) {
+                console.log(viewModel.posts.length);
+                newPost.comments = [];
+                newPost.newCommentText = "";
+                viewModel.posts.push(newPost);
+                console.log(newPost);
+            });
+            return false;
+        }
+
         function Post(id, title, text, comments) {
             this.Id = id;
             this.Title = title;
             this.Text = text;
             this.comments = ko.observableArray(comments);
-            this.newCommentText = "";
+            this.newCommentText = ko.observable("");
             this.addComment = function (post, event) {
                 //push comment to server
                 var newComment = new Comment(post.Id, post.newCommentText);
@@ -28,24 +39,14 @@
                 post.comments.push(newComment);
                 //this.comments.push(comment);
             }
+
         }
 
-        var createPostForm = function (formElement) {
-            $.post("api/Post/PostBPost", $(formElement).serialize(), "json").done(function (newPost) {
-                console.log(viewModel.posts.length);
-                newPost.comments = [];
-                newPost.newCommentText = "";
-                viewModel.posts.push(newPost);
-            });
-            return false;
-        }
+
         function PostsViewModel(posts) {
             var self = this;
             self.loaded = ko.observable(false);
             self.posts = ko.observableArray(posts);
-
-
-
 
             // Load the initial state
             $.getJSON("api/Post/", function (data) {
@@ -97,6 +98,7 @@
                         <textarea id="addComment" data-bind="value: newCommentText" placeholder="Leave a comment">
                         </textarea>
                          <a href='#' data-bind='click: addComment '>Comment</a>
+                  
                     </li>
                 </ul>
                 </li>
@@ -105,7 +107,7 @@
        <div id="newPost">
        <h2>Creat a post</h2>
        <hr />
-        <form id="frmAddPost" name="frmAddPost" onsubmit="return createPostForm(this)">
+        <form id="frmAddPost" name="frmAddPost" onsubmit="return createPostForm(this)" >
         <fieldset>
             <label>
                 Title</label>
